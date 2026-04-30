@@ -1,0 +1,4 @@
+{
+  "name": "esp-idf-workflow",
+  "description": "ESP-IDF development workflow for ESP32 / ESP32-S3 / ESP32-C3 firmware. Environment activation, build, flash, and serial monitor across Windows (CMD/PowerShell), Linux, and macOS."
+}
