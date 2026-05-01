@@ -65,7 +65,7 @@ The project's `build_esp32.ps1` handles:
 1. Loading config (`idf-env.ps1`)
 2. EIM activation check (`%IDF_TOOLS_PATH%\eim_idf.json`) — if IDF_PATH matches, dot-sources the EIM activationScript
 3. Fallback to `$IDF_PATH/export.ps1`
-4. Cleaning MSYS/MINGW env vars that trigger spurious warnings
+4. Cleaning MSYS/MINGW env vars (MSYSTEM, MINGW_PREFIX, MINGW_CHOST, MSYSTEM_CARCH, MSYSTEM_CHOST, MSYSTEM_PREFIX, MINGW_PACKAGE_PREFIX, MSYS2_PATH_TYPE) and removing MSys/Mingw paths from PATH — prevents spurious `idf_tools.py` rejections
 5. Switching to project directory
 
 **Critical**: `-ActivateOnly` uses `return` not `exit`, so it can be chained in a single `-Command` string.
@@ -195,7 +195,7 @@ esac
 | `idf.py: command not found` | Environment not activated | Run export script or build_esp32.ps1 first |
 | Flash "Failed to connect" | Wrong COM port / not in boot mode | Verify port, hold BOOT button |
 | Flash "Access denied" | Port locked by another process | Close other terminals using the port |
-| "MSys/Mingw" warnings | MSYS2 env vars leaking | Run `Remove-Item Env:MSYSTEM` etc. |
+| "MSys/Mingw" warnings | MSYS2 env vars leaking (`MSYSTEM`, `MINGW_PREFIX`, `MINGW_CHOST`, etc.) | Activation script clears all MSys vars and filters PATH |
 | CMake errors | Stale build directory | `idf.py fullclean` then rebuild |
 | Build slow | No ccache | Install ccache, add to PATH |
 

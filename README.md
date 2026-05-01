@@ -82,7 +82,7 @@ If you use the Espressif Install Manager (EIM), the workflow automatically detec
 
 #### MSYS/MINGW Warning Cleanup
 
-ESP-IDF build warns about MSYS2 env vars (`MSYSTEM`, `MINGW_PREFIX`, `MINGW_CHOST`). The activation script automatically clears them from the current process, so your build output stays clean.
+ESP-IDF build warns about MSYS2 env vars (`MSYSTEM`, `MINGW_PREFIX`, `MINGW_CHOST`, `MSYSTEM_CARCH`, `MSYSTEM_CHOST`, `MSYSTEM_PREFIX`, `MINGW_PACKAGE_PREFIX`, `MSYS2_PATH_TYPE`). The activation script automatically clears all of them and removes MSys/Mingw paths from PATH, so your build output stays clean.
 
 #### Serial Port Detection
 
@@ -220,7 +220,7 @@ Claude 会按正确流程执行：激活环境 → 运行 `idf.py` → 处理错
 
 #### MSYS/MINGW 警告清理
 
-ESP-IDF 编译时会因 MSYS2 环境变量（`MSYSTEM`、`MINGW_PREFIX`、`MINGW_CHOST`）产生警告。激活脚本会在当前进程中自动清除这些变量，保持编译输出干净。
+ESP-IDF 编译时会因 MSYS2 环境变量（`MSYSTEM`、`MINGW_PREFIX`、`MINGW_CHOST`、`MSYSTEM_CARCH`、`MSYSTEM_CHOST`、`MSYSTEM_PREFIX`、`MINGW_PACKAGE_PREFIX`、`MSYS2_PATH_TYPE`）产生警告。激活脚本会在当前进程中自动清除这些变量，并从 PATH 中过滤掉 MSys/Mingw 路径，保持编译输出干净。
 
 #### 串口自动检测
 
@@ -259,7 +259,7 @@ python scripts/serial_monitor.py -p COM8 --filter "ERROR|WARN" --log monitor.log
 | `idf.py: command not found` | 环境未激活 | 先运行激活脚本 |
 | 烧录 "Failed to connect" | 端口错误/未进入 boot 模式 | 确认 COM 口，连接时按住 BOOT 按钮 |
 | 烧录 "Access denied" | 串口被其他程序占用 | 关闭其他使用串口的终端/IDE |
-| "MSys/Mingw" 警告 | MSYS2 环境变量泄漏 | 激活脚本会自动清除 |
+| "MSys/Mingw" 警告 | MSYS2 环境变量泄漏（`MSYSTEM`、`MINGW_PREFIX` 等） | 激活脚本自动清除所有 MSys 变量并过滤 PATH |
 | CMake 错误 | 旧的构建产物 | `idf.py fullclean` 后重新编译 |
 
 ### 项目结构
