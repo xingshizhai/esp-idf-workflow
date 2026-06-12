@@ -1,0 +1,49 @@
+menu "LVGL UI Template Configuration"
+
+    menu "Wi-Fi"
+
+        config APP_WIFI_SSID
+            string "Wi-Fi SSID"
+            default ""
+            help
+                Leave empty to disable Wi-Fi (and the debug screenshot /
+                synthetic input servers, which require it).
+
+        config APP_WIFI_PASSWORD
+            string "Wi-Fi Password"
+            default ""
+
+    endmenu
+
+    menu "Debug"
+
+        config DEBUG_SCREENSHOT_ENABLED
+            bool "Enable on-demand LVGL screenshot server (Wi-Fi)"
+            default y
+            help
+                Runs a small TCP server that, on request from a PC tool,
+                captures the current LVGL screen via lv_snapshot and sends
+                it as raw RGB565 pixels. Requires Wi-Fi (APP_WIFI_SSID).
+
+        config DEBUG_SCREENSHOT_PORT
+            int "Screenshot server TCP port"
+            default 3333
+            depends on DEBUG_SCREENSHOT_ENABLED
+
+        config DEBUG_INPUT_ENABLED
+            bool "Enable on-demand synthetic touch input server (Wi-Fi)"
+            default y
+            help
+                Runs a small TCP server that, on request from a PC tool,
+                injects synthetic LVGL pointer (touch) events — tap, press,
+                release, move — without involving the I2C touch controller.
+                Requires Wi-Fi (APP_WIFI_SSID).
+
+        config DEBUG_INPUT_PORT
+            int "Synthetic touch input server TCP port"
+            default 3334
+            depends on DEBUG_INPUT_ENABLED
+
+    endmenu
+
+endmenu

@@ -1,0 +1,30 @@
+build/
+sdkconfig
+sdkconfig.old
+managed_components/
+dependencies.lock
+
+# Local ESP-IDF environment paths (copy from idf-env.example.*)
+idf-env.ps1
+idf-env.bat
+
+# Local IDE/editor state
+.vscode/
+.idea/
+
+# Temporary workspace files
+tmp/
+*.log
+
+# Python cache artifacts (tools/*.py)
+__pycache__/
+*.py[cod]
+
+# OS metadata
+.DS_Store
+
+# Clangd / LSP cache
+.cache/
+
+# Debug screenshot output
+tools/screenshot/screenshots/
