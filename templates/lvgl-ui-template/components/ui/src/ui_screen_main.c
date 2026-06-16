@@ -6,6 +6,20 @@ static void btn_page1_cb(lv_event_t *e) { (void)e; ui_manager_push(UI_SCREEN_PAG
 static void btn_page2_cb(lv_event_t *e) { (void)e; ui_manager_push(UI_SCREEN_PAGE2, UI_ANIM_SLIDE_LEFT); }
 static void btn_page3_cb(lv_event_t *e) { (void)e; ui_manager_push(UI_SCREEN_PAGE3, UI_ANIM_SLIDE_LEFT); }
 
+/* Tick counter updated by a timer — used to verify screenshot captures changes */
+static lv_obj_t *s_tick_label = NULL;
+static uint32_t  s_tick = 0;
+
+static void tick_timer_cb(lv_timer_t *t)
+{
+    (void)t;
+    if (!s_tick_label) return;
+    s_tick++;
+    char buf[32];
+    snprintf(buf, sizeof(buf), "frame: %lu", (unsigned long)s_tick);
+    lv_label_set_text(s_tick_label, buf);
+}
+
 lv_obj_t *screen_main_create(void)
 {
     const ui_palette_t *p = ui_theme_palette();
@@ -14,14 +28,13 @@ lv_obj_t *screen_main_create(void)
 
     ui_theme_create_title_bar(scr, "LVGL UI Template");
 
-    /* Flex container centred vertically in the content area below the title bar */
     lv_obj_t *col = lv_obj_create(scr);
     lv_obj_set_style_bg_opa(col, LV_OPA_TRANSP, 0);
     lv_obj_set_style_border_width(col, 0, 0);
     lv_obj_set_style_pad_all(col, 0, 0);
     lv_obj_set_style_pad_row(col, 20, 0);
     lv_obj_set_size(col, LV_PCT(100), LV_SIZE_CONTENT);
-    lv_obj_align(col, LV_ALIGN_CENTER, 0, 18);   /* +18: offset for title bar */
+    lv_obj_align(col, LV_ALIGN_CENTER, 0, 18);
     lv_obj_set_flex_flow(col, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(col, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
     lv_obj_clear_flag(col, LV_OBJ_FLAG_SCROLLABLE);
@@ -43,6 +56,17 @@ lv_obj_t *screen_main_create(void)
         lv_obj_set_style_text_font(lbl, &lv_font_montserrat_24, 0);
         lv_obj_center(lbl);
     }
+
+    /* Tick counter — increments every second so screenshots can prove they
+     * capture live LVGL state rather than a static cached image. */
+    s_tick = 0;
+    s_tick_label = lv_label_create(scr);
+    lv_label_set_text(s_tick_label, "frame: 0");
+    lv_obj_set_style_text_color(s_tick_label, p->text_muted, 0);
+    lv_obj_set_style_text_font(s_tick_label, &lv_font_montserrat_16, 0);
+    lv_obj_align(s_tick_label, LV_ALIGN_BOTTOM_MID, 0, -12);
+
+    lv_timer_create(tick_timer_cb, 1000, NULL);
 
     return scr;
 }

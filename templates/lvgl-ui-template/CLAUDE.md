@@ -123,6 +123,29 @@ from):** when computing tap coordinates for icons placed with
 double-check by taking a screenshot after a tap that "did nothing" — a few
 pixels off is usually the cause.
 
+## Wi-Fi screenshot limitation: cannot detect hardware-layer scrolling
+
+`lv_snapshot_take_to_draw_buf()` reads from LVGL's **software render buffer** — it captures
+what LVGL *thinks* the screen looks like, not the actual pixels output by the hardware.
+
+**Experimentally verified (2026-06-16):**
+
+| Condition | Wi-Fi screenshot result | Camera (physical screen) |
+|---|---|---|
+| bounce buffer ON (normal) | frame counter changes ✓ | static, correct layout ✓ |
+| bounce buffer OFF (scroll bug) | **"UI is static"** ✗ | MOVING — horizontal scroll ✗ |
+
+When the RGB LCD has PSRAM bandwidth contention causing the DMA to shift the frame:
+- Wi-Fi `check_motion.py` reports **0 px changed** — completely blind to the problem
+- USB camera multi-frame diff shows **10–25% pixels changing** — correctly detects it
+
+**Conclusion for AI agents**: Wi-Fi screenshots are reliable for verifying UI layout,
+navigation, widget state, and text content. They are **not** reliable for detecting
+hardware-layer display artifacts (tearing, scrolling, colour corruption). When an RGB
+LCD displays incorrectly and the cause is unknown, use a physical camera or ask the user
+to visually confirm. The `frame: N` counter in the main screen can be used to confirm
+that screenshots reflect live state (not a stale cache).
+
 ## Known pitfall: screenshot task stack size
 
 `components/debug_screenshot/src/debug_screenshot.c` allocates a **16KB
