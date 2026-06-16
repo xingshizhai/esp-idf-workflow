@@ -1,10 +1,17 @@
 # LVGL UI Template — AI Agent Workflow Guide
 
-This project is a minimal ESP32-S3-BOX-3 + LVGL + Wi-Fi template designed so
-an AI coding agent can develop and verify UI changes **without a human
-looking at the screen**: the agent edits code, builds/flashes, takes a
-screenshot over Wi-Fi, simulates touch taps over Wi-Fi, and reads the
-resulting screenshots back to confirm the UI behaves as expected.
+This project is a multi-board LVGL + Wi-Fi template designed so an AI coding
+agent can develop and verify UI changes **without a human looking at the
+screen**: the agent edits code, builds/flashes, takes a screenshot over Wi-Fi,
+simulates touch taps over Wi-Fi, and reads the resulting screenshots back to
+confirm the UI behaves as expected.
+
+Supported boards (selected at build time via `APP_BOARD`):
+
+| `APP_BOARD` | Hardware | Display |
+|---|---|---|
+| `esp32s3_box3` *(default)* | ESP32-S3-BOX-3 | 320×240 SPI (ILI9341) |
+| `esp32s3_lcd_ev_board` | ESP32-S3-LCD-EV-BOARD-2 | 480×480 or 800×480 RGB |
 
 ## Build / Flash / Monitor
 
@@ -13,14 +20,49 @@ before running `idf.py` — running `idf.py` directly will fail because the
 environment is not set up. First copy `idf-env.example.ps1` → `idf-env.ps1`
 (and/or `.bat`) and fill in your local ESP-IDF paths; both are gitignored.
 
+### ESP32-S3-BOX-3 (default board)
+
 | Task | Command |
 |------|---------|
-| Full build + flash + monitor (one-shot) | `powershell -NoProfile -Command ". '$PWD\build_esp32.ps1' -ActivateOnly; idf.py -p COM3 flash monitor"` |
+| Full build + flash + monitor | `powershell -NoProfile -Command ". '$PWD\build_esp32.ps1' -ActivateOnly; idf.py -p COM3 flash monitor"` |
 | Build only | `powershell -NoProfile -Command ". '$PWD\build_esp32.ps1'"` |
-| Activate then manual | `powershell -NoProfile -Command ". '$PWD\build_esp32.ps1' -ActivateOnly; idf.py menuconfig"` |
-| Flash only (after build) | `powershell -NoProfile -Command ". '$PWD\build_esp32.ps1' -ActivateOnly; idf.py -p COM3 flash"` |
+| menuconfig | `powershell -NoProfile -Command ". '$PWD\build_esp32.ps1' -ActivateOnly; idf.py menuconfig"` |
+| Flash only | `powershell -NoProfile -Command ". '$PWD\build_esp32.ps1' -ActivateOnly; idf.py -p COM3 flash"` |
 | Monitor only | `powershell -NoProfile -Command ". '$PWD\build_esp32.ps1' -ActivateOnly; idf.py -p COM3 monitor"` |
 | **macOS** flash + monitor | `idf.py -p /dev/cu.usbmodem31401 flash monitor` |
+
+### ESP32-S3-LCD-EV-BOARD-2
+
+Pass `-DAPP_BOARD=esp32s3_lcd_ev_board` to CMake (or set it in `build_esp32.ps1`).
+**Board selection via menuconfig:**
+```
+idf.py menuconfig  →  "LVGL UI Template Configuration" → "Target board"
+```
+After changing the board, run `idf.py fullclean` then rebuild so CMake links
+the correct BSP component.
+
+Sub-board selection (480×480 vs 800×480) is under menuconfig →
+"Board Support Package" → "LCD" → "Select Target Sub board".
+
+The file `sdkconfig.defaults.esp32s3_lcd_ev_board` pre-sets reasonable defaults
+(800×480 sub-board 3) when the sdkconfig is first created.  After switching
+boards you can also pass `-DAPP_BOARD=esp32s3_lcd_ev_board` on the command
+line to override Kconfig for one-off builds.
+
+**Important LCD-EV-BOARD-2 caveats:**
+- The RGB panel has **no software backlight control** — `hal_display_t.backlight_set` is NULL.
+- `BSP_LCD_H_RES` / `BSP_LCD_V_RES` are runtime function calls, not compile-time constants.
+- The first-time build downloads the BSP component from the Espressif component registry; an internet connection is required.
+- **Bounce buffer mode is required** (`CONFIG_BSP_LCD_RGB_BOUNCE_BUFFER_MODE=y`).
+  Without it the LCD DMA reads the PSRAM frame buffer directly, competing with the CPU
+  for PSRAM bandwidth and causing the entire display to scroll horizontally.
+  Bounce buffer mode routes the DMA through a small SRAM intermediate buffer, eliminating
+  the contention. `avoid_tearing` / `direct_mode` / `full_refresh` flags in lvgl_port do
+  NOT fix this — they address buffer-swap timing, not the PSRAM bandwidth root cause.
+
+**Screenshot coordinates:**
+- Sub-board 2: **480×480**, origin (0,0) at top-left.
+- Sub-board 3: **800×480**, origin (0,0) at top-left.
 
 Key rules:
 1. Must **dot-source** (`.`) `build_esp32.ps1` so PATH/IDF_PATH etc. persist

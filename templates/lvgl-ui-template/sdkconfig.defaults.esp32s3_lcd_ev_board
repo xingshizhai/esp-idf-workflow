@@ -1,0 +1,27 @@
+# Board-specific sdkconfig defaults for ESP32-S3-LCD-EV-BOARD-2
+# Loaded automatically when APP_BOARD=esp32s3_lcd_ev_board (see CMakeLists.txt)
+
+# ── Sub-board selection ───────────────────────────────────────────────────────
+# Un-comment exactly one of the two lines below to select the LCD sub-board.
+# Sub-board 2: 3.95" 480×480 RGB (GC9503CV), touch: FT5x06
+# CONFIG_BSP_LCD_SUB_BOARD_480_480=y
+#
+# Sub-board 3: 4.3" 800×480 RGB (ST7262E43), touch: GT1151
+CONFIG_BSP_LCD_SUB_BOARD_800_480=y
+
+# ── RGB frame-buffer count ────────────────────────────────────────────────────
+# 2 buffers are required for avoid_tearing mode: lvgl_port retrieves both from
+# the panel and swaps them on vsync.  With only 1 buffer, LVGL writes while DMA
+# is reading the same memory → the display appears to continuously scroll.
+CONFIG_BSP_LCD_RGB_BUFFER_NUMS=1
+CONFIG_BSP_LCD_RGB_REFRESH_AUTO=y
+
+# ── Bounce buffer ─────────────────────────────────────────────────────────────
+# LCD DMA reads from a small SRAM bounce buffer instead of directly from PSRAM.
+# This eliminates PSRAM bandwidth contention between the CPU and LCD DMA, which
+# is the root cause of the horizontal scroll artifact on the physical display.
+CONFIG_BSP_LCD_RGB_BOUNCE_BUFFER_MODE=y
+CONFIG_BSP_LCD_RGB_BOUNCE_BUFFER_HEIGHT=10
+
+# ── I2C bus index ─────────────────────────────────────────────────────────────
+CONFIG_BSP_I2C_NUM=1

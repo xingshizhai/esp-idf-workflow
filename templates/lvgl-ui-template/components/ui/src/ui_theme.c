@@ -45,6 +45,7 @@ static void style_panel_common(lv_obj_t *obj, lv_color_t bg)
 
 void ui_theme_style_root(lv_obj_t *obj)
 {
+    init_palette();
     lv_obj_set_style_bg_color(obj, s_palette.bg, 0);
     lv_obj_set_style_bg_grad_color(obj, s_palette.bg_top, 0);
     lv_obj_set_style_bg_grad_dir(obj, LV_GRAD_DIR_VER, 0);
@@ -85,8 +86,9 @@ void ui_theme_style_button_ghost(lv_obj_t *obj)
 
 lv_obj_t *ui_theme_create_title_bar(lv_obj_t *parent, const char *title)
 {
+    init_palette();
     lv_obj_t *bar = lv_obj_create(parent);
-    lv_obj_set_size(bar, 320, 36);
+    lv_obj_set_size(bar, LV_PCT(100), 36);
     lv_obj_align(bar, LV_ALIGN_TOP_LEFT, 0, 0);
     lv_obj_set_style_bg_color(bar, s_palette.panel_alt, 0);
     lv_obj_set_style_bg_opa(bar, LV_OPA_90, 0);

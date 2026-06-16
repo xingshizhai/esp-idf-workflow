@@ -1,5 +1,34 @@
 menu "LVGL UI Template Configuration"
 
+    choice APP_BOARD
+        prompt "Target board"
+        default APP_BOARD_ESP32S3_BOX3
+        help
+            Select the target development board.
+            After changing this option, run "idf.py fullclean" then rebuild
+            so the correct board BSP component is linked.
+
+        config APP_BOARD_ESP32S3_BOX3
+            bool "ESP32-S3-BOX-3  (320x240 SPI)"
+        config APP_BOARD_ESP32S3_LCD_EV_BOARD
+            bool "ESP32-S3-LCD-EV-BOARD-2  (480x480 or 800x480 RGB)"
+        config APP_BOARD_CUSTOM
+            bool "Custom board (user-defined)"
+    endchoice
+
+    config APP_BOARD_CUSTOM_NAME
+        string "Custom board directory name"
+        default "custom"
+        depends on APP_BOARD_CUSTOM
+        help
+            Name of the subdirectory under components/boards/ that contains
+            your board implementation.  The directory must provide
+            CMakeLists.txt, idf_component.yml (if it has external BSP deps),
+            and src/board_display.c + src/board_touch.c implementing the
+            hal_display_create / hal_touch_create functions declared in
+            board_hal/hal_display.h and board_hal/hal_touch.h.
+            See components/boards/custom/ for a ready-to-copy skeleton.
+
     menu "Wi-Fi"
 
         config APP_WIFI_SSID

@@ -16,8 +16,6 @@
 
 #define TAG "SCRSHOT"
 
-#define SCREEN_W 320
-#define SCREEN_H 240
 #define SCREENSHOT_TASK_STACK 16384
 
 /* Wire format sent after a 'S' request: this header, then data_len bytes
@@ -32,9 +30,8 @@ typedef struct __attribute__((packed)) {
 
 static lv_draw_buf_t *s_draw_buf;
 
-/* The 320x240 RGB565 snapshot (150KB) is too large for LVGL's internal
- * 64KB memory pool, so this buffer is allocated directly from PSRAM and
- * reused for every snapshot. */
+/* Snapshot buffer allocated from PSRAM and reused for every request.
+ * Size is determined at startup from the actual display resolution. */
 static void *psram_buf_malloc(size_t size, lv_color_format_t cf)
 {
     (void)cf;
@@ -137,15 +134,26 @@ static void screenshot_task(void *arg)
 
 esp_err_t debug_screenshot_start(void)
 {
+    /* Query actual display resolution at runtime so the buffer works for
+     * any board (320x240, 480x480, 800x480, …). */
+    lv_display_t *disp = lv_display_get_default();
+    int32_t screen_w = lv_display_get_horizontal_resolution(disp);
+    int32_t screen_h = lv_display_get_vertical_resolution(disp);
+
     static lv_draw_buf_handlers_t handlers;
     lv_draw_buf_handlers_init(&handlers, psram_buf_malloc, psram_buf_free,
                                NULL, NULL, NULL, NULL, NULL);
 
-    s_draw_buf = lv_draw_buf_create_ex(&handlers, SCREEN_W, SCREEN_H, LV_COLOR_FORMAT_RGB565, 0);
+    s_draw_buf = lv_draw_buf_create_ex(&handlers,
+                                        (uint32_t)screen_w, (uint32_t)screen_h,
+                                        LV_COLOR_FORMAT_RGB565, 0);
     if (!s_draw_buf) {
-        ESP_LOGE(TAG, "failed to allocate %dx%d snapshot buffer in PSRAM", SCREEN_W, SCREEN_H);
+        ESP_LOGE(TAG, "failed to allocate %dx%d snapshot buffer in PSRAM",
+                 (int)screen_w, (int)screen_h);
         return ESP_ERR_NO_MEM;
     }
+
+    ESP_LOGI(TAG, "snapshot buffer: %dx%d px", (int)screen_w, (int)screen_h);
 
     /* Stack lives in PSRAM: lv_snapshot_take_to_draw_buf() recurses through
      * the whole widget tree and can overflow a small internal-RAM stack on
