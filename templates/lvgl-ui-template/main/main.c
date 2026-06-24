@@ -21,13 +21,15 @@ void app_main(void)
     /* 2. Storage (NVS) — must be first; Wi-Fi requires NVS to be initialized */
     ESP_ERROR_CHECK(hal_storage_init());
 
-    /* 3. Display + touch */
+    /* 3. Display + touch
+     * width/height/buf_size_px are hints; each board's hal_display_create()
+     * overrides them with the actual hardware resolution if needed. */
     hal_display_cfg_t disp_cfg = {
         .width           = 320,
         .height          = 240,
         .rotation        = 0,
         .double_buffered = true,
-        .buf_size_px     = 320 * 50,
+        .buf_size_px     = 0,   /* 0 → board impl uses its own default (h_res * 50) */
     };
     ESP_ERROR_CHECK(hal_display_create(&disp_cfg, &g_hal.display));
     ESP_ERROR_CHECK(hal_touch_create(&g_hal.touch));

@@ -1,0 +1,4 @@
+dependencies:
+  idf: ">=5.3.0"
+  espressif/esp32_s3_lcd_ev_board:
+    version: "^4"

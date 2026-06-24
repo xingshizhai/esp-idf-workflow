@@ -45,7 +45,8 @@ esp_err_t hal_display_create(const hal_display_cfg_t *cfg, hal_display_t **out)
     esp_lcd_panel_disp_on_off(panel_handle, true);
 
     /* Register display with LVGL port (no touch here — board_touch.c does it) */
-    uint32_t buf_px = cfg ? cfg->buf_size_px : (BSP_LCD_H_RES * CONFIG_BSP_LCD_DRAW_BUF_HEIGHT);
+    uint32_t buf_px = (cfg && cfg->buf_size_px) ? cfg->buf_size_px
+                                                 : (BSP_LCD_H_RES * CONFIG_BSP_LCD_DRAW_BUF_HEIGHT);
     bool double_buf = cfg ? cfg->double_buffered : false;
 
     lvgl_port_display_cfg_t disp_cfg = {
